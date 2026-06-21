@@ -1,26 +1,6 @@
 @import 'tailwindcss';
 
 @theme {
-  --font-arcade: 'Press Start 2P', system-ui, monospace;
-}
-
-@layer utilities {
-  .text-shadow-neon-pink {
-    text-shadow: 0 0 5px #ff00ff, 0 0 10px #ff00ff, 0 0 20px #ff00ff;
-  }
-  .text-shadow-neon-blue {
-    text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff, 0 0 20px #00ffff;
-  }
-  .text-shadow-neon-white {
-    text-shadow: 0 0 5px #ffffff, 0 0 10px #ffffff, 0 0 20px #ffffff;
-  }
-  .box-shadow-neon-pink {
-    box-shadow: 0 0 5px #ff00ff, 0 0 15px #ff00ff inset;
-  }
-  .box-shadow-neon-blue {
-    box-shadow: 0 0 5px #00ffff, 0 0 15px #00ffff inset;
-  }
-  .box-shadow-neon-white {
-    box-shadow: 0 0 5px #ffffff, 0 0 15px #ffffff inset;
-  }
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-serif: 'Lora', ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
 }
