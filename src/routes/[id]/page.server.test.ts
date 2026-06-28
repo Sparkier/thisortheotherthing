@@ -26,6 +26,41 @@ describe('actions.default', () => {
 		vi.clearAllMocks();
 	});
 
+	test('returns 400 if choice is invalid', async () => {
+		const pollId = '12345678-1234-1234-1234-123456789012';
+		const request = {
+			formData: async () => {
+				const formData = new FormData();
+				formData.append('choice', 'C');
+				return formData;
+			}
+		} as unknown as Request;
+
+		const cookies = {
+			get: vi.fn(),
+			set: vi.fn()
+		};
+
+		const params = { id: pollId };
+
+		const result = await actions.default({
+			request,
+			params,
+			cookies: cookies as any,
+			url: new URL('http://localhost') as any,
+			getClientAddress: () => '127.0.0.1',
+			locals: {},
+			platform: {},
+			route: { id: '/[id]' },
+			isDataRequest: false,
+			isSubRequest: false,
+			setHeaders: () => {}
+		} as any);
+
+		expect(fail).toHaveBeenCalledWith(400, { error: 'Invalid choice' });
+		expect(result).toEqual({ status: 400, data: { error: 'Invalid choice' } });
+	});
+
 	test('returns 400 if user has already voted', async () => {
 		const pollId = '12345678-1234-1234-1234-123456789012';
 		const request = {
