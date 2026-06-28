@@ -12,7 +12,7 @@ export const actions = {
 			return fail(400, { missing: true });
 		}
 
-		if (optionA.length > 100 || optionB.length > 100) {
+		if (optionA.length > 255 || optionB.length > 255) {
 			return fail(400, { too_long: true });
 		}
 

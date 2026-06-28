@@ -55,9 +55,9 @@ describe('+page.server.ts actions', () => {
 			expect(result).toEqual({ status: 400, data: { missing: true } });
 		});
 
-		test('should return 400 failure when option_a is over 100 characters', async () => {
+		test('should return 400 failure when option_a is over 255 characters', async () => {
 			const formData = new FormData();
-			formData.append('option_a', 'a'.repeat(101));
+			formData.append('option_a', 'a'.repeat(256));
 			formData.append('option_b', 'Option B');
 
 			const request = new Request('http://localhost', {
@@ -69,10 +69,10 @@ describe('+page.server.ts actions', () => {
 			expect(result).toEqual({ status: 400, data: { too_long: true } });
 		});
 
-		test('should return 400 failure when option_b is over 100 characters', async () => {
+		test('should return 400 failure when option_b is over 255 characters', async () => {
 			const formData = new FormData();
 			formData.append('option_a', 'Option A');
-			formData.append('option_b', 'b'.repeat(101));
+			formData.append('option_b', 'b'.repeat(256));
 
 			const request = new Request('http://localhost', {
 				method: 'POST',
