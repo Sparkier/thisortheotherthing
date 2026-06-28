@@ -12,6 +12,10 @@ export const actions = {
 			return fail(400, { missing: true });
 		}
 
+		if (optionA.length > 100 || optionB.length > 100) {
+			return fail(400, { too_long: true });
+		}
+
 		const { data: poll, error } = await supabase
 			.from('polls')
 			.insert([{ option_a: optionA, option_b: optionB }])
