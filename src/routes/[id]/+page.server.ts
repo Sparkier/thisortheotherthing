@@ -26,17 +26,27 @@ export const load: PageServerLoad = async ({ params, cookies, url }) => {
 	let results = null;
 
 	if (hasVoted) {
-		// Fetch results (we can do a simple aggregation if needed, or just fetch all and count)
-		// For simplicity with basic Supabase client, fetch counts per choice
-		const { data: votesData, error: votesError } = await supabase
-			.from('votes')
-			.select('choice')
-			.eq('poll_id', pollId);
+		// Fetch results using database-level aggregation
+		const [
+			{ count: countA, error: errorA },
+			{ count: countB, error: errorB }
+		] = await Promise.all([
+			supabase
+				.from('votes')
+				.select('*', { count: 'exact', head: true })
+				.eq('poll_id', pollId)
+				.eq('choice', 'A'),
+			supabase
+				.from('votes')
+				.select('*', { count: 'exact', head: true })
+				.eq('poll_id', pollId)
+				.eq('choice', 'B')
+		]);
 
-		if (!votesError && votesData) {
+		if (!errorA && !errorB) {
 			results = {
-				A: votesData.filter((v) => v.choice === 'A').length,
-				B: votesData.filter((v) => v.choice === 'B').length
+				A: countA || 0,
+				B: countB || 0
 			};
 		} else {
 			results = { A: 0, B: 0 };
