@@ -1,84 +1,51 @@
 import { describe, test, expect } from 'vitest';
 import { actions } from './+page.server';
 
+function createRequest(options: { option_a?: string; option_b?: string } = {}) {
+	const formData = new FormData();
+	if (options.option_a !== undefined) formData.append('option_a', options.option_a);
+	if (options.option_b !== undefined) formData.append('option_b', options.option_b);
+
+	return new Request('http://localhost', {
+		method: 'POST',
+		body: formData
+	});
+}
+
 describe('+page.server.ts actions', () => {
 	describe('default action', () => {
 		test('should return 400 failure when option_a is missing', async () => {
-			const formData = new FormData();
-			formData.append('option_b', 'Option B');
-
-			const request = new Request('http://localhost', {
-				method: 'POST',
-				body: formData
-			});
-
+			const request = createRequest({ option_b: 'Option B' });
 			const result = await actions.default({ request } as any);
 			expect(result).toEqual({ status: 400, data: { missing: true } });
 		});
 
 		test('should return 400 failure when option_b is missing', async () => {
-			const formData = new FormData();
-			formData.append('option_a', 'Option A');
-
-			const request = new Request('http://localhost', {
-				method: 'POST',
-				body: formData
-			});
-
+			const request = createRequest({ option_a: 'Option A' });
 			const result = await actions.default({ request } as any);
 			expect(result).toEqual({ status: 400, data: { missing: true } });
 		});
 
 		test('should return 400 failure when both options are missing', async () => {
-			const formData = new FormData();
-
-			const request = new Request('http://localhost', {
-				method: 'POST',
-				body: formData
-			});
-
+			const request = createRequest();
 			const result = await actions.default({ request } as any);
 			expect(result).toEqual({ status: 400, data: { missing: true } });
 		});
 
 		test('should return 400 failure when options are just whitespace', async () => {
-			const formData = new FormData();
-			formData.append('option_a', '   ');
-			formData.append('option_b', 'Option B');
-
-			const request = new Request('http://localhost', {
-				method: 'POST',
-				body: formData
-			});
-
+			const request = createRequest({ option_a: '   ', option_b: 'Option B' });
 			const result = await actions.default({ request } as any);
 			expect(result).toEqual({ status: 400, data: { missing: true } });
 		});
 
 		test('should return 400 failure when option_a is over 255 characters', async () => {
-			const formData = new FormData();
-			formData.append('option_a', 'a'.repeat(256));
-			formData.append('option_b', 'Option B');
-
-			const request = new Request('http://localhost', {
-				method: 'POST',
-				body: formData
-			});
-
+			const request = createRequest({ option_a: 'a'.repeat(256), option_b: 'Option B' });
 			const result = await actions.default({ request } as any);
 			expect(result).toEqual({ status: 400, data: { too_long: true } });
 		});
 
 		test('should return 400 failure when option_b is over 255 characters', async () => {
-			const formData = new FormData();
-			formData.append('option_a', 'Option A');
-			formData.append('option_b', 'b'.repeat(256));
-
-			const request = new Request('http://localhost', {
-				method: 'POST',
-				body: formData
-			});
-
+			const request = createRequest({ option_a: 'Option A', option_b: 'b'.repeat(256) });
 			const result = await actions.default({ request } as any);
 			expect(result).toEqual({ status: 400, data: { too_long: true } });
 		});
