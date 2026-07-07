@@ -54,12 +54,14 @@ describe('load', () => {
 });
 
 describe('actions.default', () => {
+	const TEST_POLL_ID = '12345678-1234-1234-1234-123456789012';
+
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
 
 	test('returns 400 if choice is invalid', async () => {
-		const pollId = '12345678-1234-1234-1234-123456789012';
+		const pollId = TEST_POLL_ID;
 		const request = {
 			formData: async () => {
 				const formData = new FormData();
@@ -94,7 +96,7 @@ describe('actions.default', () => {
 	});
 
 	test('returns 400 if user has already voted', async () => {
-		const pollId = '12345678-1234-1234-1234-123456789012';
+		const pollId = TEST_POLL_ID;
 		const request = {
 			formData: async () => {
 				const formData = new FormData();
