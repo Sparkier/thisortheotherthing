@@ -2,6 +2,8 @@ import { error, fail } from '@sveltejs/kit';
 import { supabase } from '$lib/supabase';
 import type { PageServerLoad, Actions } from './$types';
 
+const TEN_YEARS_IN_SECONDS = 60 * 60 * 24 * 365 * 10;
+
 export const load: PageServerLoad = async ({ params, cookies, url }) => {
 	const pollId = params.id;
 
@@ -87,7 +89,7 @@ export const actions = {
 		// Set cookie valid for 10 years
 		cookies.set(`voted_${pollId}`, 'true', {
 			path: '/',
-			maxAge: 60 * 60 * 24 * 365 * 10
+			maxAge: TEN_YEARS_IN_SECONDS
 		});
 
 		return { success: true };
