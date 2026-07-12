@@ -3,12 +3,13 @@ import { supabase } from '$lib/supabase';
 import type { PageServerLoad, Actions } from './$types';
 
 const TEN_YEARS_IN_SECONDS = 60 * 60 * 24 * 365 * 10;
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export const load: PageServerLoad = async ({ params, cookies, url }) => {
 	const pollId = params.id;
 
 	// Validate UUID structure lightly
-	if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(pollId)) {
+	if (!UUID_REGEX.test(pollId)) {
 		error(404, 'Invalid poll ID');
 	}
 
