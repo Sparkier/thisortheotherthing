@@ -89,7 +89,10 @@ export const actions = {
 		// Set cookie valid for 10 years
 		cookies.set(`voted_${pollId}`, 'true', {
 			path: '/',
-			maxAge: TEN_YEARS_IN_SECONDS
+			maxAge: TEN_YEARS_IN_SECONDS,
+			httpOnly: true,
+			secure: true,
+			sameSite: 'strict'
 		});
 
 		return { success: true };
