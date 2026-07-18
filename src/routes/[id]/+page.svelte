@@ -9,6 +9,33 @@
 	let totalVotes = $derived(data.results ? data.results.A + data.results.B : 0);
 	let percentA = $derived(totalVotes > 0 && data.results ? Math.round((data.results.A / totalVotes) * 100) : 0);
 	let percentB = $derived(totalVotes > 0 && data.results ? Math.round((data.results.B / totalVotes) * 100) : 0);
+
+	let pollOptions = $derived([
+		{
+			id: 'A',
+			text: data.poll.option_a,
+			percent: percentA,
+			votes: data.results?.A ?? 0,
+			colorClass: 'text-rose-500',
+			bgColorClass: 'bg-rose-400',
+			btnTextClass: 'text-rose-900',
+			btnBgClass: 'bg-rose-50',
+			btnHoverBorderClass: 'hover:border-rose-200',
+			btnHoverBgClass: 'hover:bg-rose-100'
+		},
+		{
+			id: 'B',
+			text: data.poll.option_b,
+			percent: percentB,
+			votes: data.results?.B ?? 0,
+			colorClass: 'text-indigo-500',
+			bgColorClass: 'bg-indigo-400',
+			btnTextClass: 'text-indigo-900',
+			btnBgClass: 'bg-indigo-50',
+			btnHoverBorderClass: 'hover:border-indigo-200',
+			btnHoverBgClass: 'hover:bg-indigo-100'
+		}
+	]);
 </script>
 
 <div class="min-h-screen bg-[#FDFBF7] flex flex-col items-center py-16 px-4 font-sans text-gray-800 relative overflow-hidden">
@@ -34,33 +61,20 @@
 			</div>
 
 			<div class="space-y-8 max-w-xl mx-auto">
-				<!-- Option A Result -->
-				<div>
-					<div class="flex justify-between items-end mb-3">
-						<span class="text-lg font-medium text-gray-900">{data.poll.option_a}</span>
-						<div class="text-right">
-							<span class="text-xl font-bold text-rose-500">{percentA}%</span>
-							<span class="text-sm text-gray-400 ml-2">({data.results.A} votes)</span>
+				{#each pollOptions as option}
+					<div>
+						<div class="flex justify-between items-end mb-3">
+							<span class="text-lg font-medium text-gray-900">{option.text}</span>
+							<div class="text-right">
+								<span class="text-xl font-bold {option.colorClass}">{option.percent}%</span>
+								<span class="text-sm text-gray-400 ml-2">({option.votes} votes)</span>
+							</div>
+						</div>
+						<div class="w-full bg-gray-100 rounded-full h-5 overflow-hidden">
+							<div class="{option.bgColorClass} h-full rounded-full transition-all duration-1000 ease-out" style="width: {option.percent}%"></div>
 						</div>
 					</div>
-					<div class="w-full bg-gray-100 rounded-full h-5 overflow-hidden">
-						<div class="bg-rose-400 h-full rounded-full transition-all duration-1000 ease-out" style="width: {percentA}%"></div>
-					</div>
-				</div>
-
-				<!-- Option B Result -->
-				<div>
-					<div class="flex justify-between items-end mb-3">
-						<span class="text-lg font-medium text-gray-900">{data.poll.option_b}</span>
-						<div class="text-right">
-							<span class="text-xl font-bold text-indigo-500">{percentB}%</span>
-							<span class="text-sm text-gray-400 ml-2">({data.results.B} votes)</span>
-						</div>
-					</div>
-					<div class="w-full bg-gray-100 rounded-full h-5 overflow-hidden">
-						<div class="bg-indigo-400 h-full rounded-full transition-all duration-1000 ease-out" style="width: {percentB}%"></div>
-					</div>
-				</div>
+				{/each}
 			</div>
 
 			<div class="mt-16 pt-8 border-t border-gray-100/60 max-w-md mx-auto text-center">
@@ -82,27 +96,18 @@
 			{/if}
 
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-				<form method="POST" class="h-full" use:enhance={() => { isVoting = true; return async ({ update }) => { await update(); isVoting = false; } }}>
-					<input type="hidden" name="choice" value="A" />
-					<button
-						type="submit"
-						disabled={isVoting}
-						class="w-full h-56 flex flex-col items-center justify-center p-8 text-2xl md:text-3xl font-medium text-rose-900 bg-rose-50 border-2 border-transparent hover:border-rose-200 hover:bg-rose-100 rounded-[2rem] shadow-sm hover:shadow-md transition-all active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 break-words text-center group"
-					>
-						{data.poll.option_a}
-					</button>
-				</form>
-
-				<form method="POST" class="h-full" use:enhance={() => { isVoting = true; return async ({ update }) => { await update(); isVoting = false; } }}>
-					<input type="hidden" name="choice" value="B" />
-					<button
-						type="submit"
-						disabled={isVoting}
-						class="w-full h-56 flex flex-col items-center justify-center p-8 text-2xl md:text-3xl font-medium text-indigo-900 bg-indigo-50 border-2 border-transparent hover:border-indigo-200 hover:bg-indigo-100 rounded-[2rem] shadow-sm hover:shadow-md transition-all active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 break-words text-center group"
-					>
-						{data.poll.option_b}
-					</button>
-				</form>
+				{#each pollOptions as option}
+					<form method="POST" class="h-full" use:enhance={() => { isVoting = true; return async ({ update }) => { await update(); isVoting = false; } }}>
+						<input type="hidden" name="choice" value={option.id} />
+						<button
+							type="submit"
+							disabled={isVoting}
+							class="w-full h-56 flex flex-col items-center justify-center p-8 text-2xl md:text-3xl font-medium {option.btnTextClass} {option.btnBgClass} border-2 border-transparent {option.btnHoverBorderClass} {option.btnHoverBgClass} rounded-[2rem] shadow-sm hover:shadow-md transition-all active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 break-words text-center group"
+						>
+							{option.text}
+						</button>
+					</form>
+				{/each}
 			</div>
 		{/if}
 	</div>
