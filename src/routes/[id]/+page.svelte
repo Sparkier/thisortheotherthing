@@ -34,33 +34,26 @@
 			</div>
 
 			<div class="space-y-8 max-w-xl mx-auto">
-				<!-- Option A Result -->
-				<div>
-					<div class="flex justify-between items-end mb-3">
-						<span class="text-lg font-medium text-gray-900">{data.poll.option_a}</span>
-						<div class="text-right">
-							<span class="text-xl font-bold text-rose-500">{percentA}%</span>
-							<span class="text-sm text-gray-400 ml-2">({data.results.A} votes)</span>
+				{#snippet resultBar(label: string, percent: number, votes: number, textClass: string, bgClass: string)}
+					<div>
+						<div class="flex justify-between items-end mb-3">
+							<span class="text-lg font-medium text-gray-900">{label}</span>
+							<div class="text-right">
+								<span class="text-xl font-bold {textClass}">{percent}%</span>
+								<span class="text-sm text-gray-400 ml-2">({votes} votes)</span>
+							</div>
+						</div>
+						<div class="w-full bg-gray-100 rounded-full h-5 overflow-hidden">
+							<div class="{bgClass} h-full rounded-full transition-all duration-1000 ease-out" style="width: {percent}%"></div>
 						</div>
 					</div>
-					<div class="w-full bg-gray-100 rounded-full h-5 overflow-hidden">
-						<div class="bg-rose-400 h-full rounded-full transition-all duration-1000 ease-out" style="width: {percentA}%"></div>
-					</div>
-				</div>
+				{/snippet}
+
+				<!-- Option A Result -->
+				{@render resultBar(data.poll.option_a, percentA, data.results.A, 'text-rose-500', 'bg-rose-400')}
 
 				<!-- Option B Result -->
-				<div>
-					<div class="flex justify-between items-end mb-3">
-						<span class="text-lg font-medium text-gray-900">{data.poll.option_b}</span>
-						<div class="text-right">
-							<span class="text-xl font-bold text-indigo-500">{percentB}%</span>
-							<span class="text-sm text-gray-400 ml-2">({data.results.B} votes)</span>
-						</div>
-					</div>
-					<div class="w-full bg-gray-100 rounded-full h-5 overflow-hidden">
-						<div class="bg-indigo-400 h-full rounded-full transition-all duration-1000 ease-out" style="width: {percentB}%"></div>
-					</div>
-				</div>
+				{@render resultBar(data.poll.option_b, percentB, data.results.B, 'text-indigo-500', 'bg-indigo-400')}
 			</div>
 
 			<div class="mt-16 pt-8 border-t border-gray-100/60 max-w-md mx-auto text-center">
