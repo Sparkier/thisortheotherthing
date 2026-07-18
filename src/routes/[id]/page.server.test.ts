@@ -1,6 +1,7 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { actions, load } from './+page.server';
 import { fail, error } from '@sveltejs/kit';
+import { supabase } from '$lib/supabase';
 
 // Mock SvelteKit fail
 vi.mock('@sveltejs/kit', async () => {
@@ -51,15 +52,82 @@ describe('load', () => {
 
 		expect(error).toHaveBeenCalledWith(404, 'Invalid poll ID');
 	});
+
+	test('throws 404 for poll not found', async () => {
+		const TEST_POLL_ID = '12345678-1234-1234-1234-123456789012';
+		const params = { id: TEST_POLL_ID };
+		const cookies = { get: vi.fn() };
+		const url = new URL('http://localhost');
+
+		vi.mocked(supabase.from).mockReturnValue({
+			select: vi.fn().mockReturnValue({
+				eq: vi.fn().mockReturnValue({
+					single: vi.fn().mockResolvedValue({ data: null, error: new Error('Not found') })
+				})
+			})
+		} as any);
+
+		await expect(
+			load({
+				params,
+				cookies: cookies as any,
+				url,
+				route: { id: '/[id]' },
+				getClientAddress: () => '127.0.0.1',
+				locals: {},
+				platform: {},
+				setHeaders: () => {},
+				parent: async () => ({}),
+				depends: () => {},
+				fetch: vi.fn(),
+				isDataRequest: false,
+				isSubRequest: false
+			} as any)
+		).rejects.toThrow('404: Poll not found');
+
+		expect(error).toHaveBeenCalledWith(404, 'Poll not found');
+	});
 });
 
 describe('actions.default', () => {
+	const TEST_POLL_ID = '12345678-1234-1234-1234-123456789012';
+
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
 
+	test('returns 400 if poll ID is invalid', async () => {
+		const request = {
+			formData: async () => new FormData()
+		} as unknown as Request;
+
+		const cookies = {
+			get: vi.fn(),
+			set: vi.fn()
+		};
+
+		const params = { id: 'invalid-id' };
+
+		const result = await actions.default({
+			request,
+			params,
+			cookies: cookies as any,
+			url: new URL('http://localhost') as any,
+			getClientAddress: () => '127.0.0.1',
+			locals: {},
+			platform: {},
+			route: { id: '/[id]' },
+			isDataRequest: false,
+			isSubRequest: false,
+			setHeaders: () => {}
+		} as any);
+
+		expect(fail).toHaveBeenCalledWith(400, { error: 'Invalid poll ID' });
+		expect(result).toEqual({ status: 400, data: { error: 'Invalid poll ID' } });
+	});
+
 	test('returns 400 if choice is invalid', async () => {
-		const pollId = '12345678-1234-1234-1234-123456789012';
+		const pollId = TEST_POLL_ID;
 		const request = {
 			formData: async () => {
 				const formData = new FormData();
@@ -94,7 +162,7 @@ describe('actions.default', () => {
 	});
 
 	test('returns 400 if user has already voted', async () => {
-		const pollId = '12345678-1234-1234-1234-123456789012';
+		const pollId = TEST_POLL_ID;
 		const request = {
 			formData: async () => {
 				const formData = new FormData();
@@ -130,5 +198,45 @@ describe('actions.default', () => {
 		expect(cookies.get).toHaveBeenCalledWith(`voted_${pollId}`);
 		expect(fail).toHaveBeenCalledWith(400, { error: 'You have already voted' });
 		expect(result).toEqual({ status: 400, data: { error: 'You have already voted' } });
+	});
+
+	test('returns 500 if Supabase insert fails', async () => {
+		const pollId = '12345678-1234-1234-1234-123456789012';
+		const request = {
+			formData: async () => {
+				const formData = new FormData();
+				formData.append('choice', 'A');
+				return formData;
+			}
+		} as unknown as Request;
+
+		const cookies = {
+			get: vi.fn(),
+			set: vi.fn()
+		};
+
+		const params = { id: pollId };
+
+		// Mock supabase.from().insert() to return an error
+		vi.mocked(supabase.from).mockReturnValue({
+			insert: vi.fn().mockResolvedValue({ error: new Error('Insert failed') })
+		} as any);
+
+		const result = await actions.default({
+			request,
+			params,
+			cookies: cookies as any,
+			url: new URL('http://localhost') as any,
+			getClientAddress: () => '127.0.0.1',
+			locals: {},
+			platform: {},
+			route: { id: '/[id]' },
+			isDataRequest: false,
+			isSubRequest: false,
+			setHeaders: () => {}
+		} as any);
+
+		expect(fail).toHaveBeenCalledWith(500, { error: 'Failed to record vote' });
+		expect(result).toEqual({ status: 500, data: { error: 'Failed to record vote' } });
 	});
 });

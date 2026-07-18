@@ -23,7 +23,7 @@ export const actions = {
 			.single();
 
 		if (error) {
-			console.error('Error creating poll:', error);
+			console.error('Error creating poll:', error.message);
 			return fail(500, { error: 'Failed to create poll' });
 		}
 

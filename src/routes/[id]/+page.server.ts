@@ -2,11 +2,14 @@ import { error, fail } from '@sveltejs/kit';
 import { supabase } from '$lib/supabase';
 import type { PageServerLoad, Actions } from './$types';
 
+const TEN_YEARS_IN_SECONDS = 60 * 60 * 24 * 365 * 10;
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export const load: PageServerLoad = async ({ params, cookies, url }) => {
 	const pollId = params.id;
 
 	// Validate UUID structure lightly
-	if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(pollId)) {
+	if (!UUID_REGEX.test(pollId)) {
 		error(404, 'Invalid poll ID');
 	}
 
@@ -27,18 +30,15 @@ export const load: PageServerLoad = async ({ params, cookies, url }) => {
 
 	if (hasVoted) {
 		// Fetch results using database-level aggregation
-		const [{ count: countA, error: errorA }, { count: countB, error: errorB }] = await Promise.all([
-			supabase
-				.from('votes')
-				.select('*', { count: 'exact', head: true })
-				.eq('poll_id', pollId)
-				.eq('choice', 'A'),
-			supabase
-				.from('votes')
-				.select('*', { count: 'exact', head: true })
-				.eq('poll_id', pollId)
-				.eq('choice', 'B')
-		]);
+		const [{ count: countA, error: errorA }, { count: countB, error: errorB }] = await Promise.all(
+			['A', 'B'].map((choice) =>
+				supabase
+					.from('votes')
+					.select('*', { count: 'exact', head: true })
+					.eq('poll_id', pollId)
+					.eq('choice', choice)
+			)
+		);
 
 		if (!errorA && !errorB) {
 			results = {
@@ -61,6 +61,11 @@ export const load: PageServerLoad = async ({ params, cookies, url }) => {
 export const actions = {
 	default: async ({ request, params, cookies }) => {
 		const pollId = params.id;
+
+		if (!UUID_REGEX.test(pollId)) {
+			return fail(400, { error: 'Invalid poll ID' });
+		}
+
 		const data = await request.formData();
 		const choice = data.get('choice')?.toString();
 
@@ -84,7 +89,10 @@ export const actions = {
 		// Set cookie valid for 10 years
 		cookies.set(`voted_${pollId}`, 'true', {
 			path: '/',
-			maxAge: 60 * 60 * 24 * 365 * 10
+			maxAge: TEN_YEARS_IN_SECONDS,
+			httpOnly: true,
+			secure: true,
+			sameSite: 'strict'
 		});
 
 		return { success: true };
