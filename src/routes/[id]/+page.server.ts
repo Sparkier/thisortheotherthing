@@ -33,18 +33,15 @@ export const load: PageServerLoad = async ({ params, cookies, url }) => {
 		const [
 			{ count: countA, error: errorA },
 			{ count: countB, error: errorB }
-		] = await Promise.all([
-			supabase
-				.from('votes')
-				.select('*', { count: 'exact', head: true })
-				.eq('poll_id', pollId)
-				.eq('choice', 'A'),
-			supabase
-				.from('votes')
-				.select('*', { count: 'exact', head: true })
-				.eq('poll_id', pollId)
-				.eq('choice', 'B')
-		]);
+		] = await Promise.all(
+			['A', 'B'].map((choice) =>
+				supabase
+					.from('votes')
+					.select('*', { count: 'exact', head: true })
+					.eq('poll_id', pollId)
+					.eq('choice', choice)
+			)
+		);
 
 		if (!errorA && !errorB) {
 			results = {
