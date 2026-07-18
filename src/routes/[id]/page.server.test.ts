@@ -52,6 +52,41 @@ describe('load', () => {
 
 		expect(error).toHaveBeenCalledWith(404, 'Invalid poll ID');
 	});
+
+	test('throws 404 for poll not found', async () => {
+		const TEST_POLL_ID = '12345678-1234-1234-1234-123456789012';
+		const params = { id: TEST_POLL_ID };
+		const cookies = { get: vi.fn() };
+		const url = new URL('http://localhost');
+
+		vi.mocked(supabase.from).mockReturnValue({
+			select: vi.fn().mockReturnValue({
+				eq: vi.fn().mockReturnValue({
+					single: vi.fn().mockResolvedValue({ data: null, error: new Error('Not found') })
+				})
+			})
+		} as any);
+
+		await expect(
+			load({
+				params,
+				cookies: cookies as any,
+				url,
+				route: { id: '/[id]' },
+				getClientAddress: () => '127.0.0.1',
+				locals: {},
+				platform: {},
+				setHeaders: () => {},
+				parent: async () => ({}),
+				depends: () => {},
+				fetch: vi.fn(),
+				isDataRequest: false,
+				isSubRequest: false
+			} as any)
+		).rejects.toThrow('404: Poll not found');
+
+		expect(error).toHaveBeenCalledWith(404, 'Poll not found');
+	});
 });
 
 describe('actions.default', () => {
