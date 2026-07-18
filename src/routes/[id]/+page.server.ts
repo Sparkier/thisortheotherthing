@@ -30,10 +30,7 @@ export const load: PageServerLoad = async ({ params, cookies, url }) => {
 
 	if (hasVoted) {
 		// Fetch results using database-level aggregation
-		const [
-			{ count: countA, error: errorA },
-			{ count: countB, error: errorB }
-		] = await Promise.all(
+		const [{ count: countA, error: errorA }, { count: countB, error: errorB }] = await Promise.all(
 			['A', 'B'].map((choice) =>
 				supabase
 					.from('votes')

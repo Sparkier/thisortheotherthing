@@ -23,6 +23,11 @@ export default ts.config(
 		rules: { 'no-undef': 'off' }
 	},
 	{
+		// Tests mock partial framework objects (e.g. RequestEvent), where `any` casts are idiomatic.
+		files: ['**/*.{test,spec}.{js,ts}'],
+		rules: { '@typescript-eslint/no-explicit-any': 'off' }
+	},
+	{
 		files: ['**/*.svelte', '**/*.svelte.ts', '**/*.svelte.js'],
 		languageOptions: {
 			parserOptions: {
