@@ -82,5 +82,19 @@ describe('+page.server.ts actions', () => {
 			const result = await actions.default({ request } as any);
 			expect(result).toEqual({ status: 400, data: { too_long: true } });
 		});
+
+		test('should redirect to poll page on successful creation', async () => {
+			(supabase as any).__single.mockResolvedValueOnce({
+				data: { id: 'test-poll-id' },
+				error: null
+			});
+
+			const request = createRequest({ option_a: 'Option A', option_b: 'Option B' });
+
+			await expect(actions.default({ request } as any)).rejects.toMatchObject({
+				status: 303,
+				location: '/test-poll-id'
+			});
+		});
 	});
 });
