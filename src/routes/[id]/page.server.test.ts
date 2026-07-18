@@ -61,6 +61,36 @@ describe('actions.default', () => {
 		vi.clearAllMocks();
 	});
 
+	test('returns 400 if poll ID is invalid', async () => {
+		const request = {
+			formData: async () => new FormData()
+		} as unknown as Request;
+
+		const cookies = {
+			get: vi.fn(),
+			set: vi.fn()
+		};
+
+		const params = { id: 'invalid-id' };
+
+		const result = await actions.default({
+			request,
+			params,
+			cookies: cookies as any,
+			url: new URL('http://localhost') as any,
+			getClientAddress: () => '127.0.0.1',
+			locals: {},
+			platform: {},
+			route: { id: '/[id]' },
+			isDataRequest: false,
+			isSubRequest: false,
+			setHeaders: () => {}
+		} as any);
+
+		expect(fail).toHaveBeenCalledWith(400, { error: 'Invalid poll ID' });
+		expect(result).toEqual({ status: 400, data: { error: 'Invalid poll ID' } });
+	});
+
 	test('returns 400 if choice is invalid', async () => {
 		const pollId = TEST_POLL_ID;
 		const request = {

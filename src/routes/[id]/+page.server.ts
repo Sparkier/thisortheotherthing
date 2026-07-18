@@ -64,6 +64,11 @@ export const load: PageServerLoad = async ({ params, cookies, url }) => {
 export const actions = {
 	default: async ({ request, params, cookies }) => {
 		const pollId = params.id;
+
+		if (!UUID_REGEX.test(pollId)) {
+			return fail(400, { error: 'Invalid poll ID' });
+		}
+
 		const data = await request.formData();
 		const choice = data.get('choice')?.toString();
 
